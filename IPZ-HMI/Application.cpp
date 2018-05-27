@@ -8,6 +8,7 @@
 #include "AuthorsState.hpp"
 #include "ConnectionState.hpp"
 #include "MoveJState.hpp"
+#include "ConfigState.hpp"
 #include <iostream>
 
 
@@ -124,4 +125,5 @@ void CApplication::registerStates()
 	mStateStack.registerState<AuthorsState>(States::Authors);
 	mStateStack.registerState<PauseState>(States::Pause);
 	mStateStack.registerState<MoveJState>(States::MoveJ);
+	mStateStack.registerState<ConfigState>(States::Config);
 }

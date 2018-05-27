@@ -104,7 +104,7 @@ bool MenuState::handleEvent(const sf::Event& event)
 			else if (mOptionIndex == Config)
 			{
 				requestStackPop();
-				requestStackPush(States::ConfigIntro);
+				requestStackPush(States::Config);
 			}
 			else if (mOptionIndex == Authors)
 			{

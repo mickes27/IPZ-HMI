@@ -1,0 +1,18 @@
+Checkbox {
+    UncheckedImage      : "Green.png" Part(124, 0, 32, 32);
+    CheckedImage        : "Green.png" Part(156, 0, 32, 32);
+    UncheckedHoverImage : "Green.png" Part(188, 0, 32, 32);
+    CheckedHoverImage   : "Green.png" Part(220, 0, 32, 32);
+    TextColorNormal     : rgb(255, 255, 255);
+    TextColorHover      : rgb(255, 0, 0);
+}
+
+Label {
+    TextColor : (255, 255, 255);
+}
+
+Slider {
+    TrackImage      : "Green.png" Part(203, 150, 20, 45) Middle(0, 15, 20, 15);
+    TrackHoverImage : "Green.png" Part(223, 150, 20, 45) Middle(0, 15, 20, 15);
+    ThumbImage      : "Green.png" Part(243, 150, 30, 30);
+}
