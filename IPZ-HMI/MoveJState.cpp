@@ -11,19 +11,20 @@
 
 MoveJState::MoveJState(StateStack& stack, Context context)
 	: State(stack, context)
-	, mOptions()
-	, mOptionIndex(0)
+	, cap(0)
 	, sState()
-	, sVelocity()
 {
 
-	sf::Texture& texture = context.textures->get(Textures::TitleScreen);
+	if (!cap.isOpened())
+	{
+		exit(1);
+	}
+
+	sf::Texture& texture = context.textures->get(Textures::TitleScreenFrame);
 	sf::Font& font = context.fonts->get(Fonts::Main);
 
 
 	mBackgroundSprite.setTexture(texture);
-
-	wasZeroed = true;
 
 	// A simple menu demonstration
 
@@ -46,6 +47,54 @@ void MoveJState::draw()
 
 	centerOrigin(sState);
 	window.draw(sState);
+
+	//--- Przechwytywanie okna OpenCV
+	cv::Mat frameRGB, frameRGBA;
+	cap >> frameRGB;
+
+	if (frameRGB.empty())
+	{
+		system("PAUSE");
+		return;
+	}
+
+	cv::cvtColor(frameRGB, frameRGBA, cv::COLOR_BGR2RGBA);
+
+	camImage.create(frameRGBA.cols, frameRGBA.rows, frameRGBA.ptr());
+
+	if (!camTexture.loadFromImage(camImage))
+	{
+		system("PAUSE");
+		return;
+	}
+
+	camSprite.setTexture(camTexture);
+	camSprite.setPosition(1214.f, 30.f);
+
+	//--- Threshold
+	cap >> frameRGB;
+
+	if (frameRGB.empty())
+	{
+		system("PAUSE");
+		return;
+	}
+
+	cv::cvtColor(frameRGB, frameRGBA, cv::COLOR_BGR2RGBA);
+
+	threshholdImage.create(frameRGBA.cols, frameRGBA.rows, frameRGBA.ptr());
+
+	if (!threshholdTexture.loadFromImage(threshholdImage))
+	{
+		system("PAUSE");
+		return;
+	}
+
+	threshholdSprite.setTexture(threshholdTexture);
+	threshholdSprite.setPosition(1219.f, 564.f);
+
+	window.draw(camSprite);
+	window.draw(threshholdSprite);
 }
 
 bool MoveJState::update(sf::Time dt)
@@ -64,20 +113,7 @@ bool MoveJState::handleEvent(const sf::Event& event)
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Space) {
 			requestStackPush(States::Pause);
-		} else if (event.key.code == sf::Keyboard::Up) {
-			if (mOptionIndex > 0)
-				mOptionIndex--;
-			else
-				mOptionIndex = mOptions.size() - 1;
-
-		}
-		else if (event.key.code == sf::Keyboard::Down) {
-			if (mOptionIndex < mOptions.size() - 1)
-				mOptionIndex++;
-			else
-				mOptionIndex = 0;
-
-		}
+		} 
 	}
 
 	return true;

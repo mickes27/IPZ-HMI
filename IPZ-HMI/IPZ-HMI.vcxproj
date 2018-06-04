@@ -27,8 +27,10 @@
     <ClCompile Include="MenuState.cpp" />
     <ClCompile Include="MoveJState.cpp" />
     <ClCompile Include="PauseState.cpp" />
+    <ClCompile Include="Przetwarzanie_obrazu.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="StateStack.cpp" />
+    <ClCompile Include="TestState.cpp" />
     <ClCompile Include="TitleState.cpp" />
     <ClCompile Include="UDP.cpp" />
     <ClCompile Include="Utility.cpp" />
@@ -42,12 +44,14 @@
     <ClInclude Include="MenuState.hpp" />
     <ClInclude Include="MoveJState.hpp" />
     <ClInclude Include="PauseState.hpp" />
+    <ClInclude Include="Przetwarzanie_obrazu.hpp" />
     <ClInclude Include="ResourceHolder.hpp" />
     <ClInclude Include="ResourceIdentifiers.hpp" />
     <ClInclude Include="State.hpp" />
     <ClInclude Include="StateIdentifiers.hpp" />
     <ClInclude Include="StateStack.hpp" />
     <ClInclude Include="Structs.hpp" />
+    <ClInclude Include="TestState.hpp" />
     <ClInclude Include="TitleState.hpp" />
     <ClInclude Include="UDP.hpp" />
     <ClInclude Include="Utility.hpp" />
@@ -150,12 +154,12 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Biblioteki C++\TGUI-0.7\include;D:\Biblioteki C++\SFML\SFML-2.5.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Biblioteki C++\TGUI-0.7\include;D:\Biblioteki C++\SFML\SFML-2.5.0\include;D:\Biblioteki C++\opencv\build\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>D:\Biblioteki C++\TGUI-0.7\lib;D:\Biblioteki C++\SFML\SFML-2.5.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;sfml-network-d.lib;tgui-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\Biblioteki C++\TGUI-0.7\lib;D:\Biblioteki C++\SFML\SFML-2.5.0\lib;D:\Biblioteki C++\opencv\build\x64\vc15\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;sfml-network-d.lib;tgui-d.lib;opencv_world340d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -186,13 +190,13 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>D:\Biblioteki C++\TGUI-0.7\include;D:\Biblioteki C++\SFML\SFML-2.5.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\Biblioteki C++\TGUI-0.7\include;D:\Biblioteki C++\SFML\SFML-2.5.0\include;D:\Biblioteki C++\opencv\build;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>D:\Biblioteki C++\TGUI-0.7\lib;D:\Biblioteki C++\SFML\SFML-2.5.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\Biblioteki C++\TGUI-0.7\lib;D:\Biblioteki C++\SFML\SFML-2.5.0\lib;D:\Biblioteki C++\opencv\build\x64\vc15\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;sfml-network.lib;tgui.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

@@ -9,6 +9,7 @@
 #include "ConnectionState.hpp"
 #include "MoveJState.hpp"
 #include "ConfigState.hpp"
+#include "TestState.hpp"
 #include <iostream>
 
 
@@ -19,7 +20,8 @@ CApplication::CApplication()
 , mTextures()
 , mFonts()
 , Connection()
-, mStateStack(State::Context(mWindow, mTextures, mFonts, Connection))
+, imageProcessing()
+, mStateStack(State::Context(mWindow, mTextures, mFonts, Connection, imageProcessing))
 {
 
 	mWindow.setFramerateLimit(60);
@@ -34,6 +36,7 @@ CApplication::CApplication()
 	catch (std::runtime_error& e)
 	{
 		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
 		exit(1);
 	}
 
@@ -46,11 +49,24 @@ CApplication::CApplication()
 	catch (std::runtime_error& e)
 	{
 		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
+		exit(1);
+	}
+
+	try
+	{
+		mTextures.load(Textures::TitleScreenFrame, "Resources/Textures/TitleScreenFrame.png");
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
 		exit(1);
 	}
 
 
 	registerStates();
+	//mStateStack.pushState(States::Test);
 	mStateStack.pushState(States::Title);
 }
 
@@ -126,4 +142,5 @@ void CApplication::registerStates()
 	mStateStack.registerState<PauseState>(States::Pause);
 	mStateStack.registerState<MoveJState>(States::MoveJ);
 	mStateStack.registerState<ConfigState>(States::Config);
+	mStateStack.registerState<TestState>(States::Test);
 }

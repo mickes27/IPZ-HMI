@@ -2,6 +2,7 @@
 #define BOOK_CONFIGSTATE_HPP
 
 #include "State.hpp"
+#include "Structs.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -89,7 +90,11 @@ private:
 
 	tgui::Gui           gui;
 
-	void				collectData(tgui::Slider::Ptr slider, tgui::CheckBox::Ptr checkbox1, tgui::CheckBox::Ptr checkbox2);
+	Config				configStruct;
+	void				collectData(tgui::Slider::Ptr maxAngle, tgui::Slider::Ptr minAngle, tgui::Slider::Ptr midLeft, tgui::Slider::Ptr midRight, tgui::Slider::Ptr lowHue, tgui::Slider::Ptr highHue, tgui::Slider::Ptr lowSat, tgui::Slider::Ptr highSat, tgui::Slider::Ptr lowVal, tgui::Slider::Ptr highVal, tgui::Slider::Ptr houghVoter, tgui::Slider::Ptr Fill, tgui::Slider::Ptr Destr);
+
+	sf::Time			mTimer;
+	bool				isConfigured;
 };
 
 #endif // BOOK_CONFIGSTATE_HPP

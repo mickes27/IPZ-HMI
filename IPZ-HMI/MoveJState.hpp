@@ -9,6 +9,8 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include <opencv2/opencv.hpp>
+
 
 class MoveJState : public State
 {
@@ -22,18 +24,19 @@ public:
 
 private:
 	sf::Sprite mBackgroundSprite;
-	sf::Sprite mGear;
 
 	TextureHolder mTextures;
 
-	std::vector<sf::Text> mOptions;
-	std::size_t mOptionIndex;
-
 	sf::Text sState;
-	sf::Text sVelocity;
 
-	bool wasZeroed;
+	cv::VideoCapture cap;
+	sf::Image camImage;
+	sf::Texture camTexture;
+	sf::Sprite camSprite;
 
+	sf::Image threshholdImage;
+	sf::Texture threshholdTexture;
+	sf::Sprite threshholdSprite;
 };
 
 

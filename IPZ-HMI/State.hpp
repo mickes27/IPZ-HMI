@@ -4,6 +4,7 @@
 #include "StateIdentifiers.hpp"
 #include "ResourceIdentifiers.hpp"
 #include "UDP.hpp"
+#include "Przetwarzanie_obrazu.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
@@ -25,12 +26,13 @@ public:
 
 	struct Context
 	{
-		Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, CUDP& connection);
+		Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, CUDP& connection, Przetwarzanie_obrazu& imageproc);
 
 		sf::RenderWindow*	window;
 		TextureHolder*		textures;
 		FontHolder*			fonts;
 		CUDP*				connection;
+		Przetwarzanie_obrazu* imageproc;
 	};
 
 

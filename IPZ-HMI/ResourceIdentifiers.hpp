@@ -15,6 +15,7 @@ namespace Textures
 	{
 		Gear,
 		TitleScreen,
+		TitleScreenFrame,
 		Logo,
 		ConnectionIcon,
 	};

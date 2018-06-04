@@ -59,9 +59,15 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 	, mDestructionLow()
 	, mDestructionHigh()
 	, mDestructionCurrent()
+	, mTimer(sf::Time::Zero)
 	, gui(*context.window)
 {
 	context.window->setMouseCursorVisible(true);
+
+	isConfigured = false;
+
+	configStruct = context.imageproc->Parameters_check();
+
 	try
 	{
 		tgui::Theme::Ptr theme = tgui::Theme::create("./Widgets/Green.txt");
@@ -75,7 +81,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(90);
 		slider->setMinimum(0);
-		slider->setValue(45);
+		slider->setValue(configStruct.MinAngle);
 		gui.add(slider, "MinAngleSlider");
 
 		slider = theme->load("slider");
@@ -83,7 +89,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(180);
 		slider->setMinimum(90);
-		slider->setValue(135);
+		slider->setValue(configStruct.MaxAngle);
 		gui.add(slider, "MaxAngleSlider");
 
 		slider = theme->load("slider");
@@ -91,7 +97,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(90);
 		slider->setMinimum(0);
-		slider->setValue(45);
+		slider->setValue(configStruct.MidLeft);
 		gui.add(slider, "MidLeftSlider");
 
 		slider = theme->load("slider");
@@ -99,7 +105,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(90);
 		slider->setMinimum(0);
-		slider->setValue(45);
+		slider->setValue(configStruct.MidRight);
 		gui.add(slider, "MidRightSlider");
 
 		slider = theme->load("slider");
@@ -107,7 +113,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(179);
 		slider->setMinimum(0);
-		slider->setValue(90);
+		slider->setValue(configStruct.LowHue);
 		gui.add(slider, "LowHueSlider");
 
 		slider = theme->load("slider");
@@ -115,7 +121,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(179);
 		slider->setMinimum(0);
-		slider->setValue(90);
+		slider->setValue(configStruct.HighHue);
 		gui.add(slider, "HighHueSlider");
 
 		slider = theme->load("slider");
@@ -123,7 +129,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(255);
 		slider->setMinimum(0);
-		slider->setValue(128);
+		slider->setValue(configStruct.LowSat);
 		gui.add(slider, "LowSaturationSlider");
 
 		slider = theme->load("slider");
@@ -131,7 +137,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(255);
 		slider->setMinimum(0);
-		slider->setValue(128);
+		slider->setValue(configStruct.HighSat);
 		gui.add(slider, "HighSaturationSlider");
 
 		slider = theme->load("slider");
@@ -139,7 +145,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(255);
 		slider->setMinimum(0);
-		slider->setValue(128);
+		slider->setValue(configStruct.LowVal);
 		gui.add(slider, "LowValueSlider");
 
 		slider = theme->load("slider");
@@ -147,7 +153,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(255);
 		slider->setMinimum(0);
-		slider->setValue(128);
+		slider->setValue(configStruct.HighVal);
 		gui.add(slider, "HighValueSlider");
 
 		slider = theme->load("slider");
@@ -155,7 +161,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(400);
 		slider->setMinimum(0);
-		slider->setValue(200);
+		slider->setValue(configStruct.HoughVot);
 		gui.add(slider, "HoughVoterSlider");
 
 		slider = theme->load("slider");
@@ -163,7 +169,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(10);
 		slider->setMinimum(0);
-		slider->setValue(5);
+		slider->setValue(configStruct.Fill);
 		gui.add(slider, "FillSlider");
 
 		slider = theme->load("slider");
@@ -171,7 +177,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 		slider->setSize(400, 20);
 		slider->setMaximum(10);
 		slider->setMinimum(0);
-		slider->setValue(5);
+		slider->setValue(configStruct.Destr);
 		gui.add(slider, "DestructionSlider");
 
 		/*tgui::CheckBox::Ptr checkbox = theme->load("checkbox");
@@ -228,7 +234,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mMinAngleCurrent.setFont(context.fonts->get(Fonts::Main));
 	mMinAngleCurrent.setOutlineThickness(2);
-	mMinAngleCurrent.setString(L"45");
+	mMinAngleCurrent.setString(toString(configStruct.MinAngle));
 	mMinAngleCurrent.setCharacterSize(60);
 	mMinAngleCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 200.f);
 
@@ -255,7 +261,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mMaxAngleCurrent.setFont(context.fonts->get(Fonts::Main));
 	mMaxAngleCurrent.setOutlineThickness(2);
-	mMaxAngleCurrent.setString(L"135");
+	mMaxAngleCurrent.setString(toString(configStruct.MaxAngle));
 	mMaxAngleCurrent.setCharacterSize(60);
 	mMaxAngleCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 260.f);
 
@@ -282,7 +288,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mMidLeftCurrent.setFont(context.fonts->get(Fonts::Main));
 	mMidLeftCurrent.setOutlineThickness(2);
-	mMidLeftCurrent.setString(L"45");
+	mMidLeftCurrent.setString(toString(configStruct.MidLeft));
 	mMidLeftCurrent.setCharacterSize(60);
 	mMidLeftCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 320.f);
 
@@ -309,7 +315,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mMidRightCurrent.setFont(context.fonts->get(Fonts::Main));
 	mMidRightCurrent.setOutlineThickness(2);
-	mMidRightCurrent.setString(L"45");
+	mMidRightCurrent.setString(toString(configStruct.MidRight));
 	mMidRightCurrent.setCharacterSize(60);
 	mMidRightCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 380.f);
 
@@ -336,7 +342,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mLowHueCurrent.setFont(context.fonts->get(Fonts::Main));
 	mLowHueCurrent.setOutlineThickness(2);
-	mLowHueCurrent.setString(L"90");
+	mLowHueCurrent.setString(toString(configStruct.LowHue));
 	mLowHueCurrent.setCharacterSize(60);
 	mLowHueCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 440.f);
 
@@ -363,7 +369,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mHighHueCurrent.setFont(context.fonts->get(Fonts::Main));
 	mHighHueCurrent.setOutlineThickness(2);
-	mHighHueCurrent.setString(L"90");
+	mHighHueCurrent.setString(toString(configStruct.HighHue));
 	mHighHueCurrent.setCharacterSize(60);
 	mHighHueCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 500.f);
 
@@ -390,7 +396,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mLowSaturationCurrent.setFont(context.fonts->get(Fonts::Main));
 	mLowSaturationCurrent.setOutlineThickness(2);
-	mLowSaturationCurrent.setString(L"128");
+	mLowSaturationCurrent.setString(toString(configStruct.LowSat));
 	mLowSaturationCurrent.setCharacterSize(60);
 	mLowSaturationCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 560.f);
 
@@ -417,7 +423,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mHighSaturationCurrent.setFont(context.fonts->get(Fonts::Main));
 	mHighSaturationCurrent.setOutlineThickness(2);
-	mHighSaturationCurrent.setString(L"128");
+	mHighSaturationCurrent.setString(toString(configStruct.HighSat));
 	mHighSaturationCurrent.setCharacterSize(60);
 	mHighSaturationCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 620.f);
 
@@ -444,7 +450,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mLowValueCurrent.setFont(context.fonts->get(Fonts::Main));
 	mLowValueCurrent.setOutlineThickness(2);
-	mLowValueCurrent.setString(L"128");
+	mLowValueCurrent.setString(toString(configStruct.LowVal));
 	mLowValueCurrent.setCharacterSize(60);
 	mLowValueCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 680.f);
 
@@ -471,7 +477,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mHighValueCurrent.setFont(context.fonts->get(Fonts::Main));
 	mHighValueCurrent.setOutlineThickness(2);
-	mHighValueCurrent.setString(L"128");
+	mHighValueCurrent.setString(toString(configStruct.HighVal));
 	mHighValueCurrent.setCharacterSize(60);
 	mHighValueCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 740.f);
 
@@ -498,7 +504,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mHoughVoterCurrent.setFont(context.fonts->get(Fonts::Main));
 	mHoughVoterCurrent.setOutlineThickness(2);
-	mHoughVoterCurrent.setString(L"200");
+	mHoughVoterCurrent.setString(toString(configStruct.HoughVot));
 	mHoughVoterCurrent.setCharacterSize(60);
 	mHoughVoterCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 800.f);
 
@@ -525,7 +531,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mFillCurrent.setFont(context.fonts->get(Fonts::Main));
 	mFillCurrent.setOutlineThickness(2);
-	mFillCurrent.setString(L"5");
+	mFillCurrent.setString(toString(configStruct.Fill));
 	mFillCurrent.setCharacterSize(60);
 	mFillCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 860.f);
 
@@ -552,7 +558,7 @@ ConfigState::ConfigState(StateStack& stack, Context context)
 
 	mDestructionCurrent.setFont(context.fonts->get(Fonts::Main));
 	mDestructionCurrent.setOutlineThickness(2);
-	mDestructionCurrent.setString(L"5");
+	mDestructionCurrent.setString(toString(configStruct.Destr));
 	mDestructionCurrent.setCharacterSize(60);
 	mDestructionCurrent.setPosition(context.window->getView().getSize().x / 8.f + 1200.f, 920.f);
 }
@@ -672,6 +678,16 @@ bool ConfigState::update(sf::Time dt)
 	tgui::Slider::Ptr destructionSlider = gui.get<tgui::Slider>("DestructionSlider");
 	mDestructionCurrent.setString(toString(destructionSlider->getValue()));
 
+	if (isConfigured) {
+		mTimer += dt;
+
+		if (mTimer >= sf::seconds(1.0f))
+		{
+			requestStackPop();
+			requestStackPush(States::Menu);
+		}
+	}
+
 	return true;
 }
 
@@ -679,16 +695,53 @@ bool ConfigState::handleEvent(const sf::Event& event)
 {
 	gui.handleEvent(event);
 
-	if ((event.type == sf::Event::JoystickButtonPressed && event.joystickButton.button == 3) || event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape)
+	if (event.type == sf::Event::KeyPressed)
 	{
-		requestStackPop();
-		requestStackPush(States::Menu);
+		if (event.key.code == sf::Keyboard::Escape)
+		{
+			requestStackPop();
+			requestStackPush(States::Menu);
+		}
+		else if (event.key.code == sf::Keyboard::Enter) {
+			tgui::Slider::Ptr minAngle = gui.get<tgui::Slider>("MinAngleSlider");
+			tgui::Slider::Ptr maxAngle = gui.get<tgui::Slider>("MaxAngleSlider");
+			tgui::Slider::Ptr midLeft = gui.get<tgui::Slider>("MidLeftSlider");
+			tgui::Slider::Ptr midRight = gui.get<tgui::Slider>("MidRightSlider");
+			tgui::Slider::Ptr lowHue = gui.get<tgui::Slider>("LowHueSlider");
+			tgui::Slider::Ptr highHue = gui.get<tgui::Slider>("HighHueSlider");
+			tgui::Slider::Ptr lowSat = gui.get<tgui::Slider>("LowSaturationSlider");
+			tgui::Slider::Ptr highSat = gui.get<tgui::Slider>("HighSaturationSlider");
+			tgui::Slider::Ptr lowVal = gui.get<tgui::Slider>("LowValueSlider");
+			tgui::Slider::Ptr highVal = gui.get<tgui::Slider>("HighValueSlider");
+			tgui::Slider::Ptr houghVoter = gui.get<tgui::Slider>("HoughVoterSlider");
+			tgui::Slider::Ptr Fill = gui.get<tgui::Slider>("FillSlider");
+			tgui::Slider::Ptr Destr = gui.get<tgui::Slider>("DestructionSlider");
+
+
+			collectData(minAngle, maxAngle, midLeft, midRight, lowHue, highHue, lowSat, highSat, lowVal, highVal, houghVoter, Fill, Destr);
+			isConfigured = true;
+		}
 	}
 
 	return true;
 }
 
-void ConfigState::collectData(tgui::Slider::Ptr slider, tgui::CheckBox::Ptr checkbox1, tgui::CheckBox::Ptr checkbox2)
+void ConfigState::collectData(tgui::Slider::Ptr maxAngle, tgui::Slider::Ptr minAngle, tgui::Slider::Ptr midLeft, tgui::Slider::Ptr midRight, tgui::Slider::Ptr lowHue, tgui::Slider::Ptr highHue, tgui::Slider::Ptr lowSat, tgui::Slider::Ptr highSat, tgui::Slider::Ptr lowVal, tgui::Slider::Ptr highVal, tgui::Slider::Ptr houghVoter, tgui::Slider::Ptr Fill, tgui::Slider::Ptr Destr)
 {
+	configStruct.MinAngle = minAngle->getValue();
+	configStruct.MaxAngle = maxAngle->getValue();
+	configStruct.MidLeft = midLeft->getValue();
+	configStruct.MidRight = midRight->getValue();
+	configStruct.LowHue = lowHue->getValue();
+	configStruct.HighHue = highHue->getValue();
+	configStruct.LowSat = lowSat->getValue();
+	configStruct.HighSat = highSat->getValue();
+	configStruct.LowVal = lowVal->getValue();
+	configStruct.HighVal = highVal->getValue();
+	configStruct.HoughVot = houghVoter->getValue();
+	configStruct.Fill = Fill->getValue();
+	configStruct.Destr = Destr->getValue();
+
+	getContext().imageproc->Parameters_load(configStruct);
 
 }

@@ -2,11 +2,12 @@
 #include "StateStack.hpp"
 
 
-State::Context::Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, CUDP& connection)
+State::Context::Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, CUDP& connection, Przetwarzanie_obrazu& imageproc)
 	: window(&window)
 	, textures(&textures)
 	, fonts(&fonts)
 	, connection(&connection)
+	, imageproc(&imageproc)
 {
 }
 

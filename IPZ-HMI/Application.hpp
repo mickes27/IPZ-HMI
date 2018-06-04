@@ -7,6 +7,7 @@
 #include "ResourceIdentifiers.hpp"
 #include "StateStack.hpp"
 #include "UDP.hpp"
+#include "Przetwarzanie_obrazu.hpp"
 
 class CApplication : private sf::NonCopyable
 {
@@ -31,4 +32,6 @@ private:
 	StateStack mStateStack;
 
 	CUDP Connection;
+	
+	Przetwarzanie_obrazu imageProcessing;
 };
