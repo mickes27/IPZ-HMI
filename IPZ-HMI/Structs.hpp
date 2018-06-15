@@ -10,6 +10,11 @@ struct Package {
 	sf::Uint64 Delay;
 };
 
+struct Manual {
+	sf::String Command;
+	bool Water;
+};
+
 struct Config {
 	int MinAngle;
 	int MaxAngle;

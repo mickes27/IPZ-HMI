@@ -5,8 +5,7 @@
 #include <opencv2/opencv.hpp>
 #include <math.h>
 #include <SFML/Network.hpp>
-#include <fstream>
-#include "Structs.hpp"
+#include <mutex>
 
 #define PI 3.1415 
 
@@ -14,12 +13,25 @@ using namespace cv;
 using namespace std;
 
 
+struct Config {
+	int MinAngle;
+	int MaxAngle;
+	int MidLeft;
+	int MidRight;
+	int LowHue;
+	int HighHue;
+	int LowSat;
+	int HighSat;
+	int LowVal;
+	int HighVal;
+	int HoughVot;
+	int Fill;
+	int Destr;
+};
+
+
 Przetwarzanie_obrazu::Przetwarzanie_obrazu()
 {
-	files = fopen("./Logs/log.txt", "w");
-	if (!files) {
-		cout << "Problem z otwaciem ";
-	}
 
 	iLowH = 32;
 	iHighH = 77;
@@ -37,6 +49,13 @@ Przetwarzanie_obrazu::Przetwarzanie_obrazu()
 	houghVote_right = 60;
 	size_destruct = 5;
 	size_fill = 5;
+
+	files = fopen("plik.txt", "w");
+	if (!files) {
+		cout << "Problem z otwaciem ";
+	}
+
+	isStarted = true;
 }
 
 
@@ -49,38 +68,38 @@ Przetwarzanie_obrazu::~Przetwarzanie_obrazu()
 void Przetwarzanie_obrazu::average(float Eps_rho = 8, float Eps_theta = 0.05) {
 	float bufor_theta = 0, bufor_rho = 0;
 	int number = 0;
-	std::vector<cv::Vec2f>::const_iterator it = lines.begin();
-	while (it != lines.end()) {
+	int begin = 0;
+	while (begin < lines.size()) {
 		bufor_rho = 0;
 		bufor_theta = 0;
 		number = 0;
-		float rho = (*it)[0];
-		float theta = (*it)[1];
+		float rho = lines[begin][0];
+		float theta = lines[begin][1];
 		//std::cout << "line: (" << rho << "," << theta << ")\n";
-		std::vector<cv::Vec2f>::const_iterator i = lines.end();
+		int i = lines.size();
 		--i;
-		while (i != it) {
-			float rho = (*i)[0];
-			float theta = (*i)[1];
+		while (i != begin) {
+			float rho = lines[i][0];
+			float theta = lines[i][1];
 			//std::cout << "line: (" << rho << "," << theta << ")\n";
 			//cout << abs((*it)[0] - (*i)[0]) << "  " << abs((*it)[1] - (*i)[1]) << endl;
-			if (abs((*it)[0] - (*i)[0]) <= Eps_rho && abs((*it)[1] - (*i)[1]) <= Eps_theta) {
-				bufor_rho += (*i)[0];
-				bufor_theta += (*i)[1];
+			if (abs(lines[begin][0] - lines[i][0]) <= Eps_rho && abs(lines[begin][1] - lines[i][1]) <= Eps_theta) {
+				bufor_rho += lines[i][0];
+				bufor_theta += lines[i][1];
 				number++;
-				lines.erase(i);
+				lines.erase(lines.begin() + i);
 				//cout << "erase" << endl;
 			}
 			--i;
 		}
 		if (number) {
-			bufor_rho = (bufor_rho + (*it)[0]) / (number + 1);
-			bufor_theta = (bufor_theta + (*it)[1]) / (number + 1);
+			bufor_rho = (bufor_rho + lines[begin][0]) / (number + 1);
+			bufor_theta = (bufor_theta + lines[begin][1]) / (number + 1);
 			cv::Vec2f bufor = { bufor_rho,bufor_theta };
-			lines.erase(it);
-			lines.insert(it, 1, bufor);
+			lines.erase(lines.begin() + begin);
+			lines.insert(lines.begin() + begin, 1, bufor);
 		}
-		++it;
+		++begin;
 	}
 	//cout << lines.size() << endl;
 }
@@ -89,18 +108,45 @@ void Przetwarzanie_obrazu::average(float Eps_rho = 8, float Eps_theta = 0.05) {
 void Przetwarzanie_obrazu::show(bool prze)
 {
 	if (prze) {
-		cv::imshow("result", result);
 		cv::imshow("roil", roi_left);
 		cv::imshow("roip", roi_right);
 	}
-	else {
-		cv::imshow("result", imgOriginal);
-	}
+	cv::imshow("result", result);
 	//cv::imshow("hough", hough);
 	//cv::imshow("image", imgOriginal);
 	//cv::imshow("Contours", drawing);
 	cv::imshow("Thresholded Image", imgThresholded); //show the thresholded image
 													 //cv::imshow("Original", imgOriginal); //show the original image
+}
+
+cv::Mat * Przetwarzanie_obrazu::getOriginal()
+{
+	return &imgOriginal;
+}
+
+cv::Mat * Przetwarzanie_obrazu::getResults()
+{
+	return &imgResult;
+}
+
+cv::Mat* Przetwarzanie_obrazu::getThreshholded()
+{
+	return &imgThresholded;
+}
+
+bool Przetwarzanie_obrazu::getStarted()
+{
+	return isStarted;
+}
+
+void Przetwarzanie_obrazu::changeTest(bool change)
+{
+	isStarted = change;
+}
+
+int Przetwarzanie_obrazu::getNumber()
+{
+	return Number;
 }
 
 
@@ -134,14 +180,14 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 		lines_right = lines;
 	}
 
-	std::vector<Vec2f>::const_iterator it = lines_left.begin();
+	unsigned __int64 begin = 0;
 	Mat hough(imgOriginal.size(), CV_8U, Scalar(0));
 	Vec2f closest;
 	float min_distance_left = float(result.cols) / 2;
-	while (it != lines_left.end()) {
+	while (begin < lines_left.size()) {
 
-		float rho = (*it)[0];   // first element is distance rho
-		float theta = (*it)[1]; // second element is angle theta
+		float rho = lines_left[begin][0];   // first element is distance rho
+		float theta = lines_left[begin][1]; // second element is angle theta
 		float a = -(cos(theta) / sin(theta));
 		float b = rho / sin(theta);
 		float dist = (result.cols / 2) - ((result.rows / point_height) - b) / a;
@@ -163,14 +209,14 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 		//std::cout << "line: (" << rho << "," << theta << ")\n";
 		fprintf(files, "line: (%f,%f) \n", rho, theta);
 
-		++it;
+		++begin;
 	}
-	it = lines_right.begin();
+	begin = 0;
 	float min_distance_right = float(result.cols) / 2;
-	while (it != lines_right.end()) {
+	while (begin < lines_right.size()) {
 
-		float rho = (*it)[0];   // first element is distance rho
-		float theta = (*it)[1]; // second element is angle theta
+		float rho = lines_right[begin][0];   // first element is distance rho
+		float theta = lines_right[begin][1]; // second element is angle theta
 		float a = -(cos(theta) / sin(theta));
 		float b = rho / sin(theta);
 		float dist = (0.5f - cut_off)*contours1.cols + ((result.rows / point_height) - b) / a;
@@ -193,7 +239,7 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 		//}
 		//std::cout << "line: (" << rho << "," << theta << ")\n";
 		fprintf(files, "line: (%f,%f) \n", rho, theta);
-		++it;
+		++begin;
 	}
 
 	Point x1(result.cols / 2, 0);
@@ -206,7 +252,11 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 	circle(result, midle, 10, Scalar(0, 0, 255), -1);
 	line(result, x1, x2, Scalar(255), 8);
 	value = midle.x - (result.cols / 2);
-	this->show(1);
+	std::mutex mtx;
+	mtx.lock();
+	update2(this->result);
+	update3(this->imgThresholded);
+	mtx.unlock();
 	return value;
 }
 
@@ -215,10 +265,6 @@ void Przetwarzanie_obrazu::setup()
 {
 	namedWindow("Control", CV_WINDOW_AUTOSIZE); //create a window called "Control"
 	namedWindow("Control1", CV_WINDOW_AUTOSIZE);
-
-
-
-
 	cvCreateTrackbar("max", "Control1", &max_angle, 180); //Hue (0 - 179)
 	cvCreateTrackbar("min", "Control1", &min_angle, 90);
 	cvCreateTrackbar("mid_left", "Control1", &mid_angle_left, 90);
@@ -277,12 +323,11 @@ bool Przetwarzanie_obrazu::zeros(float min)
 
 void Przetwarzanie_obrazu::tresh()
 {
-	Mat roi = imgOriginal(Rect(imgOriginal.cols * 1 / 10, imgOriginal.rows * 2 / 5, imgOriginal.cols * 8 / 10, imgOriginal.rows / 2));
+	roi = imgOriginal(Rect(imgOriginal.cols * 1 / 10, imgOriginal.rows * 2 / 5, imgOriginal.cols * 8 / 10, imgOriginal.rows / 2));
 	imgOriginal = roi;
-	//image.copyTo(imgOriginal);
 
 	Mat imgHSV;
-	cvtColor(imgOriginal, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
+	cvtColor(roi, imgHSV, COLOR_BGR2HSV); //Convert the captured frame from BGR to HSV
 
 	inRange(imgHSV, Scalar(iLowH, iLowS, iLowV), Scalar(iHighH, iHighS, iHighV), imgThresholded); //Threshold the image
 																								  //morphological opening (remove small objects from the foreground)
@@ -340,6 +385,16 @@ void Przetwarzanie_obrazu::update(cv::Mat imgOriginal)
 	this->imgOriginal = imgOriginal;
 }
 
+void Przetwarzanie_obrazu::update2(cv::Mat imgOriginal)
+{
+	imgResult = imgOriginal;
+}
+
+void Przetwarzanie_obrazu::update3(cv::Mat imgOriginal)
+{
+	imgThresh = imgOriginal;
+}
+
 
 int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 {
@@ -362,8 +417,7 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 		system("pause");
 		return -1;
 	}
-	this->setup();
-	Mat imgOriginal;
+	//this->setup();
 	while (true) {
 		bool bSuccess = cap.read(imgOriginal); // read a new frame from video
 		if (!bSuccess) //if not success, break loop
@@ -374,13 +428,22 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 		//wysylanie
 		this->update(imgOriginal);
 		this->tresh();
+		imgOriginal.copyTo(result);
 		if (this->zeros(0.001f)) {
 			value = 1000;
-			this->show(0);
+			//show(0);
 		}
 		else {
 			value = this->Przetwarzanie();
+			//show(1);
 		}
+		std::mutex mtx;
+		mtx.lock();
+		update2(this->result);
+		update3(this->imgThresholded);
+		mtx.unlock();
+
+
 		packet.clear();
 		packet << value;
 		if (socket.send(packet, recipient, port) != sf::Socket::Done)
@@ -444,7 +507,6 @@ struct Config Przetwarzanie_obrazu::Parameters_check()
 	p.HoughVot = houghVote_left;
 	p.Destr = size_destruct;
 	p.Fill = size_fill;
-
 	return p;
 }
 

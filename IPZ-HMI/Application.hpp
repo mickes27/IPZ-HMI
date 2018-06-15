@@ -34,4 +34,6 @@ private:
 	CUDP Connection;
 	
 	Przetwarzanie_obrazu imageProcessing;
+	
+	
 };

@@ -7,6 +7,7 @@
 #include <SFML/Graphics/Text.hpp>
 
 
+
 class ConnectionState : public State
 {
 public:
@@ -41,6 +42,8 @@ private:
 
 	bool wasZeroed;
 	bool isConnected;
+
+
 };
 
 #endif // BOOK_CONNECTIONSTATE_HPP

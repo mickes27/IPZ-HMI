@@ -25,6 +25,7 @@ private:
 	enum OptionNames
 	{
 		Play,
+		ManualControl,
 		Config,
 		Authors,
 		Exit,

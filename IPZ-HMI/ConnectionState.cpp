@@ -22,7 +22,7 @@ ConnectionState::ConnectionState(StateStack& stack, Context context)
 	wasZeroed = true;
 	isConnected = false;
 	
-	sIP.setString("169.254.248.142");
+	sIP.setString("198.162.137.20");
 	sPort.setString("54000");
 
 	mBackgroundSprite.setTexture(context.textures->get(Textures::TitleScreen));

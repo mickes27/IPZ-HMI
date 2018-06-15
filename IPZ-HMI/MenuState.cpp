@@ -32,13 +32,22 @@ MenuState::MenuState(StateStack& stack, Context context)
 	playOption.setPosition((context.window->getView().getSize() / 2.f) - sf::Vector2f(0.f, 60.f));
 	mOptions.push_back(playOption);
 
+	sf::Text manualControlOption;
+	manualControlOption.setFont(font);
+	manualControlOption.setString(L"Kontrola rêczna");
+	manualControlOption.setCharacterSize(60);
+	manualControlOption.setOutlineThickness(2);
+	centerOrigin(manualControlOption);
+	manualControlOption.setPosition(playOption.getPosition() + sf::Vector2f(0.f, 60.f));
+	mOptions.push_back(manualControlOption);
+
 	sf::Text configOption;
 	configOption.setFont(font);
 	configOption.setString("Konfiguruj pojazd");
 	configOption.setCharacterSize(60);
 	configOption.setOutlineThickness(2);
 	centerOrigin(configOption);
-	configOption.setPosition(playOption.getPosition() + sf::Vector2f(0.f, 60.f));
+	configOption.setPosition(playOption.getPosition() + sf::Vector2f(0.f, 120.f));
 	mOptions.push_back(configOption);
 
 	sf::Text authorsOption;
@@ -47,7 +56,7 @@ MenuState::MenuState(StateStack& stack, Context context)
 	authorsOption.setCharacterSize(60);
 	authorsOption.setOutlineThickness(2);
 	centerOrigin(authorsOption);
-	authorsOption.setPosition(playOption.getPosition() + sf::Vector2f(0.f, 120.f));
+	authorsOption.setPosition(playOption.getPosition() + sf::Vector2f(0.f, 180.f));
 	mOptions.push_back(authorsOption);
 
 	sf::Text exitOption;
@@ -56,7 +65,7 @@ MenuState::MenuState(StateStack& stack, Context context)
 	exitOption.setCharacterSize(60);
 	exitOption.setOutlineThickness(2);
 	centerOrigin(exitOption);
-	exitOption.setPosition(playOption.getPosition() + sf::Vector2f(0.f, 180.f));
+	exitOption.setPosition(playOption.getPosition() + sf::Vector2f(0.f, 240.f));
 	mOptions.push_back(exitOption);
 
 
@@ -101,6 +110,11 @@ bool MenuState::handleEvent(const sf::Event& event)
 				requestStackPop();
 				requestStackPush(States::MoveJ);
 			} 
+			else if (mOptionIndex == ManualControl)
+			{
+				requestStackPop();
+				requestStackPush(States::ManualControl);
+			}
 			else if (mOptionIndex == Config)
 			{
 				requestStackPop();

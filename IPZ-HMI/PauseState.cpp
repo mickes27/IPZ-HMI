@@ -62,6 +62,7 @@ bool PauseState::handleEvent(const sf::Event& event)
 
 	if (event.key.code == sf::Keyboard::Escape)
 	{
+		getContext().imageproc->changeTest(false);
 		requestStateClear();
 		requestStackPush(States::Menu);
 	}

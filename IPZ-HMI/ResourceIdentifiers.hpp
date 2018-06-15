@@ -16,8 +16,12 @@ namespace Textures
 		Gear,
 		TitleScreen,
 		TitleScreenFrame,
+		ManualControl,
 		Logo,
-		ConnectionIcon,
+		Arrow,
+		ArrowRed,
+		ButtonRed,
+		ButtonGreen
 	};
 }
 

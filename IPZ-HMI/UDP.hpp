@@ -2,6 +2,7 @@
 #include <SFML/Network.hpp>
 #include <SFML/System.hpp>
 #include "Structs.hpp"
+#include <thread>
 
 class CUDP
 {
@@ -17,11 +18,16 @@ private:
 	sf::IpAddress iRecipient;
 	unsigned short iPort;
 
+	std::thread* ImageProcessingThread;
+
 public:
 	int sendPacket(Package pack);
+	int sendPacket(Manual pack);
 	void setIP(sf::IpAddress ip);
 	void setPort(unsigned short port);
 	sf::IpAddress getIP();
 	unsigned short getPort();
+	void registerThread(std::thread* thread);
+	std::thread* getThread();
 };
 

@@ -36,6 +36,23 @@ int CUDP::sendPacket(Package pack)
 	return 0;
 }
 
+int CUDP::sendPacket(Manual pack)
+{
+	pPacket << pack.Command << pack.Water;
+
+	if (socket.send(pPacket, iRecipient, iPort) != sf::Socket::Done)
+	{
+		std::cout << "Couldn't send" << std::endl;
+		return -1;
+	}
+	else {
+		std::cout << "Wyslano: " << pack.Command.toAnsiString() << " " << pack.Water << std::endl;
+	}
+	pPacket.clear();
+
+	return 0;
+}
+
 void CUDP::setIP(sf::IpAddress ip)
 {
 
@@ -55,4 +72,14 @@ sf::IpAddress CUDP::getIP()
 unsigned short CUDP::getPort()
 {
 	return iPort;
+}
+
+void CUDP::registerThread(std::thread * thread)
+{
+	ImageProcessingThread = thread;
+}
+
+std::thread * CUDP::getThread()
+{
+	return ImageProcessingThread;
 }

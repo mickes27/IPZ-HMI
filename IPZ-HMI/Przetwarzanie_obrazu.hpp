@@ -18,11 +18,23 @@ public:
 	bool zeros(float min);
 	void tresh();
 	void update(cv::Mat imgOriginal);
+	void update2(cv::Mat imgOriginal);
+	void update3(cv::Mat imgOriginal);
 	int start(std::string, unsigned short);
 	void Parameters_load(struct Config);
 	struct Config Parameters_check();
 	void show(bool);
+	cv::Mat* getOriginal();
+	cv::Mat* getResults();
+	cv::Mat* getThreshholded();
+	bool getStarted();
+	void changeTest(bool change);
+	int getNumber();
 private:
+	bool Test;
+	bool isStarted;
+	int Number;
+	cv::Mat roi;
 	cv::VideoCapture cap;
 	cv::Mat imgOriginal;
 	cv::Mat roi_left;
@@ -30,6 +42,8 @@ private:
 	cv::Mat contours1;
 	cv::Mat imgThresholded;
 	cv::Mat result;
+	cv::Mat imgResult;
+	cv::Mat imgThresh;
 	int iLowH;
 	int iHighH;
 	int iLowS;
@@ -50,4 +64,3 @@ private:
 	FILE* files;
 	std::vector<cv::Vec2f> lines;
 };
-

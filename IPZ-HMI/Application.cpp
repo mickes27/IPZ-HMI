@@ -10,13 +10,14 @@
 #include "MoveJState.hpp"
 #include "ConfigState.hpp"
 #include "TestState.hpp"
+#include "ManualControlState.hpp"
 #include <iostream>
 
 
 const sf::Time CApplication::TimePerFrame = sf::seconds(1.f / 60.f);
 
 CApplication::CApplication()
-: mWindow(sf::VideoMode(1920, 1080), "MJR 2017", sf::Style::Fullscreen)
+: mWindow(sf::VideoMode(1920, 1080), "IPZ", sf::Style::Fullscreen)
 , mTextures()
 , mFonts()
 , Connection()
@@ -56,6 +57,61 @@ CApplication::CApplication()
 	try
 	{
 		mTextures.load(Textures::TitleScreenFrame, "Resources/Textures/TitleScreenFrame.png");
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
+		exit(1);
+	}
+
+	try
+	{
+		mTextures.load(Textures::ManualControl, "Resources/Textures/ManualControl.png");
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
+		exit(1);
+	}
+
+	try
+	{
+		mTextures.load(Textures::Arrow, "Resources/Textures/arrow.png");
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
+		exit(1);
+	}
+
+	try
+	{
+		mTextures.load(Textures::ArrowRed, "Resources/Textures/arrow_red.png");
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
+		exit(1);
+	}
+
+	try
+	{
+		mTextures.load(Textures::ButtonGreen, "Resources/Textures/button_green.png");
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
+		exit(1);
+	}
+
+	try
+	{
+		mTextures.load(Textures::ButtonRed, "Resources/Textures/button_red.png");
 	}
 	catch (std::runtime_error& e)
 	{
@@ -141,6 +197,7 @@ void CApplication::registerStates()
 	mStateStack.registerState<AuthorsState>(States::Authors);
 	mStateStack.registerState<PauseState>(States::Pause);
 	mStateStack.registerState<MoveJState>(States::MoveJ);
+	mStateStack.registerState<ManualControlState>(States::ManualControl);
 	mStateStack.registerState<ConfigState>(States::Config);
 	mStateStack.registerState<TestState>(States::Test);
 }

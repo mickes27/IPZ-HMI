@@ -4,21 +4,27 @@
 #include "ResourceHolder.hpp"
 #include <iostream>
 #include <thread>
+#include "Przetwarzanie_obrazu.hpp"
+#include <Windows.h>
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Graphics/View.hpp>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+#include <mutex>
+
 
 MoveJState::MoveJState(StateStack& stack, Context context)
 	: State(stack, context)
-	, cap(0)
 	, sState()
 {
+	//auto f1 = std::async(&MoveJState::startImageProccessing, this);
+	startThread();
+	//ImageProccessingThread = new std::thread(&Przetwarzanie_obrazu::start, context.imageproc, toString(getContext().connection->getIP()), getContext().connection->getPort());
 
-	if (!cap.isOpened())
-	{
-		exit(1);
-	}
+	
 
 	sf::Texture& texture = context.textures->get(Textures::TitleScreenFrame);
 	sf::Font& font = context.fonts->get(Fonts::Main);
@@ -37,6 +43,19 @@ MoveJState::MoveJState(StateStack& stack, Context context)
 
 }
 
+MoveJState::~MoveJState()
+{
+	ImageProccessingThread->join();
+}
+
+void MoveJState::startImageProccessing()
+{
+	getContext().imageproc->changeTest(true);
+	getContext().imageproc->start(toString(getContext().connection->getIP()), getContext().connection->getPort());
+	
+
+}
+
 
 void MoveJState::draw()
 {
@@ -48,35 +67,41 @@ void MoveJState::draw()
 	centerOrigin(sState);
 	window.draw(sState);
 
+	
 	//--- Przechwytywanie okna OpenCV
 	cv::Mat frameRGB, frameRGBA;
-	cap >> frameRGB;
-
+	std::mutex mtx;
+	mtx.try_lock();
+	frameRGB = getContext().imageproc->getOriginal()->clone();
+	mtx.unlock();
+	
 	if (frameRGB.empty())
 	{
-		system("PAUSE");
+		frameRGB = getContext().imageproc->getResults()->clone();
+		std::cout << "Walnal obraz" << std::endl;
 		return;
 	}
-
+	
 	cv::cvtColor(frameRGB, frameRGBA, cv::COLOR_BGR2RGBA);
 
 	camImage.create(frameRGBA.cols, frameRGBA.rows, frameRGBA.ptr());
 
 	if (!camTexture.loadFromImage(camImage))
 	{
-		system("PAUSE");
+		std::cout << "Brak obrazu" << std::endl;
 		return;
 	}
 
 	camSprite.setTexture(camTexture);
 	camSprite.setPosition(1214.f, 30.f);
-
+	window.draw(camSprite);
+	/*
 	//--- Threshold
-	cap >> frameRGB;
+	frameRGB = getContext().imageproc->getThreshholded()->clone();
 
 	if (frameRGB.empty())
 	{
-		system("PAUSE");
+		std::cout << "Brak obrazu" << std::endl;
 		return;
 	}
 
@@ -86,15 +111,15 @@ void MoveJState::draw()
 
 	if (!threshholdTexture.loadFromImage(threshholdImage))
 	{
-		system("PAUSE");
+		std::cout << "Brak obrazu" << std::endl;
 		return;
 	}
 
 	threshholdSprite.setTexture(threshholdTexture);
 	threshholdSprite.setPosition(1219.f, 564.f);
 
-	window.draw(camSprite);
-	window.draw(threshholdSprite);
+	
+	window.draw(threshholdSprite);*/
 }
 
 bool MoveJState::update(sf::Time dt)
@@ -112,10 +137,18 @@ bool MoveJState::handleEvent(const sf::Event& event)
 	
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Space) {
+			//ImageProccessingThread->join();
 			requestStackPush(States::Pause);
 		} 
 	}
 
 	return true;
+}
+
+void MoveJState::startThread()
+{
+	std::cout << "Rozpoczynam nowy watek";
+	ImageProccessingThread = new std::thread(&MoveJState::startImageProccessing, this);
+	getContext().connection->registerThread(ImageProccessingThread);
 }
 

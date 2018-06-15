@@ -10,16 +10,20 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include <opencv2/opencv.hpp>
+#include <thread>
 
 
 class MoveJState : public State
 {
 public:
 	MoveJState(StateStack& stack, Context context);
+	~MoveJState();
+	void startImageProccessing();
 
 	virtual void		draw();
 	virtual bool		update(sf::Time dt);
 	virtual bool		handleEvent(const sf::Event& event);
+	void startThread();
 
 
 private:
@@ -29,7 +33,6 @@ private:
 
 	sf::Text sState;
 
-	cv::VideoCapture cap;
 	sf::Image camImage;
 	sf::Texture camTexture;
 	sf::Sprite camSprite;
@@ -37,6 +40,9 @@ private:
 	sf::Image threshholdImage;
 	sf::Texture threshholdTexture;
 	sf::Sprite threshholdSprite;
+
+	std::thread* ImageProccessingThread;
+	bool Test;
 };
 
 
