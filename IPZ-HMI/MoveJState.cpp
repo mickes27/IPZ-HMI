@@ -20,6 +20,7 @@ MoveJState::MoveJState(StateStack& stack, Context context)
 	: State(stack, context)
 	, sState()
 {
+	isScaled = false;
 	//auto f1 = std::async(&MoveJState::startImageProccessing, this);
 	startThread();
 	//ImageProccessingThread = new std::thread(&Przetwarzanie_obrazu::start, context.imageproc, toString(getContext().connection->getIP()), getContext().connection->getPort());
@@ -67,17 +68,16 @@ void MoveJState::draw()
 	centerOrigin(sState);
 	window.draw(sState);
 
-	
-	//--- Przechwytywanie okna OpenCV
 	cv::Mat frameRGB, frameRGBA;
 	std::mutex mtx;
-	mtx.try_lock();
-	frameRGB = getContext().imageproc->getOriginal()->clone();
+
+	//--- Przechwytywanie okna OpenCV
+	mtx.lock();
+	frameRGB = getContext().imageproc->getResults()->clone();
 	mtx.unlock();
 	
 	if (frameRGB.empty())
 	{
-		frameRGB = getContext().imageproc->getResults()->clone();
 		std::cout << "Walnal obraz" << std::endl;
 		return;
 	}
@@ -92,12 +92,18 @@ void MoveJState::draw()
 		return;
 	}
 
-	camSprite.setTexture(camTexture);
+	if (isScaled == false) {
+		//camSprite.scale(1, 1);
+		isScaled = true;
+	}
 	camSprite.setPosition(1214.f, 30.f);
+
 	window.draw(camSprite);
-	/*
+	
 	//--- Threshold
+	mtx.lock();
 	frameRGB = getContext().imageproc->getThreshholded()->clone();
+	mtx.unlock();
 
 	if (frameRGB.empty())
 	{
@@ -105,7 +111,7 @@ void MoveJState::draw()
 		return;
 	}
 
-	cv::cvtColor(frameRGB, frameRGBA, cv::COLOR_BGR2RGBA);
+	cv::cvtColor(frameRGB, frameRGBA, cv::COLOR_GRAY2RGBA);
 
 	threshholdImage.create(frameRGBA.cols, frameRGBA.rows, frameRGBA.ptr());
 
@@ -119,7 +125,7 @@ void MoveJState::draw()
 	threshholdSprite.setPosition(1219.f, 564.f);
 
 	
-	window.draw(threshholdSprite);*/
+	window.draw(threshholdSprite);
 }
 
 bool MoveJState::update(sf::Time dt)

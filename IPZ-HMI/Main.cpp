@@ -7,7 +7,7 @@ int main()
 	if (music.openFromFile("Resources/Music/Theme.ogg")) {
 		music.play();
 	}
-	music.setVolume(25);
+	music.setVolume(100);
 	music.setLoop(true);
 
 	CApplication app;

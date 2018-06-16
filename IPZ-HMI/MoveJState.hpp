@@ -43,6 +43,7 @@ private:
 
 	std::thread* ImageProccessingThread;
 	bool Test;
+	bool isScaled;
 };
 
 

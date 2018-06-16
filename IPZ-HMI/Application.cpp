@@ -120,6 +120,17 @@ CApplication::CApplication()
 		exit(1);
 	}
 
+	try
+	{
+		mTextures.load(Textures::Gear, "Resources/Textures/Gear.png");
+	}
+	catch (std::runtime_error& e)
+	{
+		std::cout << "Exception: " << e.what() << std::endl;
+		system("PAUSE");
+		exit(1);
+	}
+
 
 	registerStates();
 	//mStateStack.pushState(States::Test);

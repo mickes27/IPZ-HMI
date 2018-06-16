@@ -36,6 +36,17 @@ private:
 	sf::Text mesInfo;
 	sf::Text mesState;
 
+	sf::Text gearVal;
+	sf::Text gearInfo;
+
+	sf::Text currentMesInfo;
+	sf::Text mesHumidityInfo;
+	sf::Text mesTemperatureInfo;
+	sf::Text mesInsolationInfo;
+	sf::Text mesHumidityVal;
+	sf::Text mesTemperatureVal;
+	sf::Text mesInsolationVal;
+
 	cv::VideoCapture cap;
 
 	sf::Sprite arrowUp;
@@ -46,13 +57,20 @@ private:
 	sf::Sprite mesButton;
 	sf::Sprite watButton;
 
+	sf::Sprite Gear;
+
 	bool isUp;
 	bool isDown;
 	bool isLeft;
 	bool isRight;
 
-	bool isMeasuring;
+	bool startMeasure;
 	bool isWatering;
+
+	bool Busy;
+	bool duringMeasure;
+
+	int gearValue;
 };
 
 

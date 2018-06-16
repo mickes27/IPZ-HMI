@@ -15,14 +15,17 @@
 
 ManualControlState::ManualControlState(StateStack& stack, Context context)
 	: State(stack, context)
-	, cap(0)
+	, cap("http://192.168.137.20:8080/stream/video.mjpeg")
 	, isUp(false)
 	, isDown(false)
 	, isLeft(false)
 	, isRight(false)
-	, isMeasuring(false)
+	, startMeasure(false)
 	, isWatering(false)
+	, Busy(false)
+	, duringMeasure(false)
 {
+	context.window->setKeyRepeatEnabled(false);
 
 	if (!cap.isOpened()) {
 		exit(-1);
@@ -31,6 +34,7 @@ ManualControlState::ManualControlState(StateStack& stack, Context context)
 	sf::Texture& texture = context.textures->get(Textures::ManualControl);
 	sf::Texture& arrow = context.textures->get(Textures::Arrow);
 	sf::Texture& button = context.textures->get(Textures::ButtonGreen);
+	sf::Texture& gear = context.textures->get(Textures::Gear);
 
 	sf::Font& font = context.fonts->get(Fonts::Main);
 
@@ -65,8 +69,13 @@ ManualControlState::ManualControlState(StateStack& stack, Context context)
 	watButton.setTexture(button);
 	centerOrigin(watButton);
 	watButton.setPosition(320.f, 810.f);
-	
-	// A simple menu demonstration
+
+	//--- Gear
+	Gear.setTexture(gear);
+	centerOrigin(Gear);
+	Gear.setPosition(1350.f, 910.f);
+
+	//--- A simple menu demonstration
 
 	watInfo.setFont(font);
 	watInfo.setString(L"[Q]");
@@ -96,6 +105,67 @@ ManualControlState::ManualControlState(StateStack& stack, Context context)
 	centerOrigin(mesState);
 	mesState.setPosition(1600.f, 670.f);
 
+	gearVal.setFont(font);
+	gearVal.setString(L"1");
+	gearVal.setCharacterSize(60);
+	gearVal.setOutlineThickness(2);
+	centerOrigin(gearVal);
+	gearVal.setPosition(1350.f, 820.f);
+
+	gearInfo.setFont(font);
+	gearInfo.setString(L"[R/F]");
+	gearInfo.setCharacterSize(40);
+	gearInfo.setOutlineThickness(2);
+	centerOrigin(gearInfo);
+	gearInfo.setPosition(1350.f, 1000.f);
+
+	//--- Measures
+	currentMesInfo.setFont(font);
+	currentMesInfo.setString(L"Ostatni pomiar:");
+	currentMesInfo.setCharacterSize(60);
+	currentMesInfo.setOutlineThickness(2);
+	centerOrigin(currentMesInfo);
+	currentMesInfo.setPosition(320.f, 100.f);
+
+	mesHumidityInfo.setFont(font);
+	mesHumidityInfo.setString(L"Wilgotnoœæ:");
+	mesHumidityInfo.setCharacterSize(40);
+	mesHumidityInfo.setOutlineThickness(2);
+	mesHumidityInfo.setPosition(100.f, 160.f);
+
+	mesTemperatureInfo.setFont(font);
+	mesTemperatureInfo.setString(L"Temperatura gleby:");
+	mesTemperatureInfo.setCharacterSize(40);
+	mesTemperatureInfo.setOutlineThickness(2);
+	mesTemperatureInfo.setPosition(100.f, 210.f);
+
+	mesInsolationInfo.setFont(font);
+	mesInsolationInfo.setString(L"Nas³onecznienie:");
+	mesInsolationInfo.setCharacterSize(40);
+	mesInsolationInfo.setOutlineThickness(2);
+	mesInsolationInfo.setPosition(100.f, 260.f);
+
+	mesHumidityVal.setFont(font);
+	mesHumidityVal.setString(L"b/d");
+	mesHumidityVal.setCharacterSize(40);
+	mesHumidityVal.setOutlineThickness(2);
+	mesHumidityVal.setPosition(500.f, 160.f);
+
+	mesTemperatureVal.setFont(font);
+	mesTemperatureVal.setString(L"b/d");
+	mesTemperatureVal.setCharacterSize(40);
+	mesTemperatureVal.setOutlineThickness(2);
+	mesTemperatureVal.setPosition(500.f, 210.f);
+
+	mesInsolationVal.setFont(font);
+	mesInsolationVal.setString(L"b/d");
+	mesInsolationVal.setCharacterSize(40);
+	mesInsolationVal.setOutlineThickness(2);
+	mesInsolationVal.setPosition(500.f, 260.f);
+
+
+	gearValue = 1;
+
 }
 
 
@@ -114,6 +184,8 @@ void ManualControlState::draw()
 	window.draw(mesButton);
 	window.draw(watButton);
 
+	window.draw(Gear);
+
 	centerOrigin(watInfo);
 	window.draw(watInfo);
 	centerOrigin(watState);
@@ -123,6 +195,21 @@ void ManualControlState::draw()
 	window.draw(mesInfo);
 	centerOrigin(mesState);
 	window.draw(mesState);
+
+	centerOrigin(gearVal);
+	window.draw(gearVal);
+	centerOrigin(gearInfo);
+	window.draw(gearInfo);
+
+	centerOrigin(currentMesInfo);
+	window.draw(currentMesInfo);
+
+	window.draw(mesHumidityInfo);
+	window.draw(mesInsolationInfo);
+	window.draw(mesTemperatureInfo);
+	window.draw(mesHumidityVal);
+	window.draw(mesTemperatureVal);
+	window.draw(mesInsolationVal);
 
 
 	//--- Przechwytywanie okna OpenCV
@@ -170,7 +257,7 @@ bool ManualControlState::update(sf::Time dt)
 	isRight = false;
 	isWatering = false;
 
-	if (isMeasuring != true) {
+	if (Busy != true) {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
 			arrowUp.setTexture(getContext().textures->get(Textures::ArrowRed));
 			isUp = true;
@@ -193,58 +280,79 @@ bool ManualControlState::update(sf::Time dt)
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) {
 			mesButton.setTexture(getContext().textures->get(Textures::ButtonRed));
-			isMeasuring = true;
+			startMeasure = true;
 		}
+		
 	}
 
 	Manual pack;
 
 	pack.Command = "stop";
 	pack.Water = false;
+	pack.Gear = gearValue;
+	
+	if (Busy == true) {
+		dataSet data;
+		data = getContext().connection->getData();
 
-	if (isUp) {
-		if (isLeft) {
-			pack.Command = "for-left";
-		}
-		else if (isRight) {
-			pack.Command = "for-right";
+		if ((data.Humidity != -1) && (data.Temperature != -1) && (data.Insolation != -1)) {
+			mesHumidityVal.setString(toString(data.Humidity));
+			mesTemperatureVal.setString(toString(data.Temperature));
+			mesInsolationVal.setString(toString(data.Insolation));
+			Busy = false;
+			mesButton.setTexture(getContext().textures->get(Textures::ButtonGreen ));
 		}
 		else {
-			pack.Command = "foreward";
+			std::cout << "Czekam na dane z czujnikow" << std::endl;
 		}
-	}
-	else if(isDown) {
-		if (isLeft) {
-			pack.Command = "back-left";
-		}
-		else if (isRight) {
-			pack.Command = "back-right";
-		}
-		else {
-			pack.Command = "backward";
-		}
-	}
-	else if (isLeft) {
-		pack.Command = "left";
-	}
-	else if (isRight) {
-		pack.Command = "right";
-	}
-
-	if (isWatering) {
-		pack.Water = true;
 	}
 	else {
-		pack.Water = false;
-	}
+		if (isUp) {
+			if (isLeft) {
+				pack.Command = "for-left";
+			}
+			else if (isRight) {
+				pack.Command = "for-right";
+			}
+			else {
+				pack.Command = "foreward";
+			}
+		}
+		else if (isDown) {
+			if (isLeft) {
+				pack.Command = "back-left";
+			}
+			else if (isRight) {
+				pack.Command = "back-right";
+			}
+			else {
+				pack.Command = "backward";
+			}
+		}
+		else if (isLeft) {
+			pack.Command = "left";
+		}
+		else if (isRight) {
+			pack.Command = "right";
+		}
 
-	if (isMeasuring) {
-		pack.Command = "measure";
-		pack.Water = false;
-	}
+		if (isWatering) {
+			pack.Water = true;
+		}
+		else {
+			pack.Water = false;
+		}
 
-	std::cout << "Komenda: " << pack.Command.toAnsiString().c_str() << "\nPodlewanie: " << pack.Water << std::endl;
-	getContext().connection->sendPacket(pack);
+		if (startMeasure) {
+			startMeasure = false;
+			pack.Command = "measure";
+			pack.Water = false;
+			Busy = true;
+		}
+
+		std::cout << "Komenda: " << pack.Command.toAnsiString().c_str() << "\nPodlewanie: " << pack.Water << "\nBieg: " << pack.Gear << std::endl;
+		getContext().connection->sendPacket(pack);
+	}
 
 	return true;
 }
@@ -255,8 +363,20 @@ bool ManualControlState::handleEvent(const sf::Event& event)
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::Space) {
 			requestStackPush(States::Pause);
+		} else if (event.key.code == sf::Keyboard::R) {
+			if (gearValue < 3) {
+				gearValue++;
+				gearVal.setString(toString(gearValue));
+			}
+		}
+		else if (event.key.code == sf::Keyboard::F) {
+			if (gearValue > 1) {
+				gearValue--;
+				gearVal.setString(toString(gearValue));
+			}
 		}
 	}
+
 
 	return true;
 }

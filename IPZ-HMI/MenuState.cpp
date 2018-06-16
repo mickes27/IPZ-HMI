@@ -107,11 +107,19 @@ bool MenuState::handleEvent(const sf::Event& event)
 		{
 			if (mOptionIndex == Play)
 			{
+				menuStruct pack;
+				pack.menuCommand = "autodrive";
+				getContext().connection->sendPacket(pack);
+
 				requestStackPop();
 				requestStackPush(States::MoveJ);
 			} 
 			else if (mOptionIndex == ManualControl)
 			{
+				menuStruct pack;
+				pack.menuCommand = "manual";
+				getContext().connection->sendPacket(pack);
+
 				requestStackPop();
 				requestStackPush(States::ManualControl);
 			}

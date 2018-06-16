@@ -13,6 +13,17 @@ struct Package {
 struct Manual {
 	sf::String Command;
 	bool Water;
+	int Gear;
+};
+
+struct menuStruct {
+	sf::String menuCommand;
+};
+
+struct dataSet {
+	int Humidity;
+	int Temperature;
+	int Insolation;
 };
 
 struct Config {

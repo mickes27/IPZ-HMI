@@ -23,6 +23,8 @@ private:
 public:
 	int sendPacket(Package pack);
 	int sendPacket(Manual pack);
+	int sendPacket(menuStruct pack);
+	dataSet getData();
 	void setIP(sf::IpAddress ip);
 	void setPort(unsigned short port);
 	sf::IpAddress getIP();

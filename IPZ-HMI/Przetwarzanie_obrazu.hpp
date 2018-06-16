@@ -17,8 +17,7 @@ public:
 	void number_of_lines(int*, cv::Mat*, int, int, bool);
 	bool zeros(float min);
 	void tresh();
-	void update(cv::Mat imgOriginal);
-	void update2(cv::Mat imgOriginal);
+	void update2();
 	void update3(cv::Mat imgOriginal);
 	int start(std::string, unsigned short);
 	void Parameters_load(struct Config);

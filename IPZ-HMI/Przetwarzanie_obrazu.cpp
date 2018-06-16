@@ -9,6 +9,8 @@
 
 #define PI 3.1415 
 
+std::mutex mtx;
+
 using namespace cv;
 using namespace std;
 
@@ -76,7 +78,7 @@ void Przetwarzanie_obrazu::average(float Eps_rho = 8, float Eps_theta = 0.05) {
 		float rho = lines[begin][0];
 		float theta = lines[begin][1];
 		//std::cout << "line: (" << rho << "," << theta << ")\n";
-		int i = lines.size();
+		int i = int(lines.size());
 		--i;
 		while (i != begin) {
 			float rho = lines[i][0];
@@ -155,8 +157,8 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 	sf::Int16 value = 0;
 	std::vector<Vec2f> lines_left;
 	std::vector<Vec2f> lines_right;
-	roi_left = contours1(Rect(0, 0, int(float(contours1.cols) *cut_off), imgOriginal.rows));
-	roi_right = contours1(Rect(int(float(contours1.cols) *(1 - cut_off)), 0, int(float(contours1.cols)*cut_off), imgOriginal.rows));
+	roi_left = imgThresholded(Rect(0, 0, int(float(imgThresholded.cols) *cut_off), imgThresholded.rows));
+	roi_right = imgThresholded(Rect(int(float(imgThresholded.cols) *(1 - cut_off)), 0, int(float(imgThresholded.cols)*cut_off), imgThresholded.rows));
 	lines = lines_left;
 	this->number_of_lines(&houghVote_left, &roi_left, min_angle, mid_angle_left, true);
 	lines_left = lines;
@@ -219,7 +221,7 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 		float theta = lines_right[begin][1]; // second element is angle theta
 		float a = -(cos(theta) / sin(theta));
 		float b = rho / sin(theta);
-		float dist = (0.5f - cut_off)*contours1.cols + ((result.rows / point_height) - b) / a;
+		float dist = (0.5f - cut_off)*imgThresholded.cols + ((result.rows / point_height) - b) / a;
 		//cout << dist << endl;
 		if (min_distance_right > dist && dist > 0) {
 			min_distance_right = dist;
@@ -230,9 +232,9 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 		//if (theta < 30.*PI / 180. || theta > 150.*PI / 180.) { //     filter theta angle to find lines with theta between 30 and 150 degrees (mostly vertical)
 
 		// point of intersection of the line with first row
-		Point pt1(int(rho / cos(theta) + contours1.cols*(1 - cut_off)), 0);
+		Point pt1(int(rho / cos(theta) + imgThresholded.cols*(1 - cut_off)), 0);
 		// point of intersection of the line with last row
-		Point pt2(int((rho - result.rows*sin(theta)) / cos(theta) + contours1.cols*(1 - cut_off)), result.rows);
+		Point pt2(int((rho - result.rows*sin(theta)) / cos(theta) + imgThresholded.cols*(1 - cut_off)), result.rows);
 		// draw a white line
 		line(result, pt1, pt2, Scalar(255), 8);
 		line(hough, pt1, pt2, Scalar(255), 8);
@@ -254,7 +256,7 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 	value = midle.x - (result.cols / 2);
 	std::mutex mtx;
 	mtx.lock();
-	update2(this->result);
+	update2();
 	update3(this->imgThresholded);
 	mtx.unlock();
 	return value;
@@ -309,10 +311,10 @@ void Przetwarzanie_obrazu::number_of_lines(int* houghVote, cv::Mat* roi, int min
 
 bool Przetwarzanie_obrazu::zeros(float min)
 {
-	float zero = float(countNonZero(contours1));
-	cout << "zeros: " << zero / (contours1.cols*contours1.rows) << endl;
-	fprintf(files, "zeros: %f", zero / (contours1.cols*contours1.rows));
-	if (zero / (contours1.cols*contours1.rows) < 0.01) {
+	float zero = float(countNonZero(imgThresholded));
+	cout << "zeros: " << zero / (imgThresholded.cols*imgThresholded.rows) << endl;
+	fprintf(files, "zeros: %f", zero / (imgThresholded.cols*imgThresholded.rows));
+	if (zero / (imgThresholded.cols*imgThresholded.rows) < 0.01) {
 		return true;
 	}
 	else {
@@ -373,21 +375,16 @@ void Przetwarzanie_obrazu::tresh()
 	}
 	}*/
 
-	contours1 = imgThresholded;
+	//contours1 = imgThresholded;
 	//Canny(imgThresholded, contours1, 50, 350);
 	//Mat contoursInv;
 	//threshold(drawing, contours1, 128, 255, THRESH_BINARY_INV);
 }
 
-
-void Przetwarzanie_obrazu::update(cv::Mat imgOriginal)
+void Przetwarzanie_obrazu::update2()
 {
-	this->imgOriginal = imgOriginal;
-}
-
-void Przetwarzanie_obrazu::update2(cv::Mat imgOriginal)
-{
-	imgResult = imgOriginal;
+	imgResult = this->result;
+	imgThresh = this->imgThresholded;
 }
 
 void Przetwarzanie_obrazu::update3(cv::Mat imgOriginal)
@@ -407,8 +404,8 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 	packet << value;
 	sf::IpAddress recipient = ip;
 
-	VideoCapture cap(0);
-	//VideoCapture cap("http://"+ip+":8080/stream/video.mjpeg"); //capture the video from web cam
+	//VideoCapture cap(0);
+	VideoCapture cap("http://"+ip+":8080/stream/video.mjpeg"); //capture the video from web cam
 
 
 	if (!cap.isOpened())  // if not success, exit program
@@ -418,15 +415,14 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 		return -1;
 	}
 	//this->setup();
-	while (true) {
+	while (isStarted) {
 		bool bSuccess = cap.read(imgOriginal); // read a new frame from video
 		if (!bSuccess) //if not success, break loop
 		{
 			cout << "Cannot read a frame from video stream" << endl;
 			break;
 		}
-		//wysylanie
-		this->update(imgOriginal);
+
 		this->tresh();
 		imgOriginal.copyTo(result);
 		if (this->zeros(0.001f)) {
@@ -437,11 +433,25 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 			value = this->Przetwarzanie();
 			//show(1);
 		}
-		std::mutex mtx;
 		mtx.lock();
-		update2(this->result);
-		update3(this->imgThresholded);
+		update2();
 		mtx.unlock();
+
+		packet.clear();
+		packet << value;
+		if (socket.send(packet, recipient, port) != sf::Socket::Done)
+		{
+			std::cout << "Some error" << std::endl;
+			return 12;
+		}
+
+
+		waitKey(0);
+	}
+		/*
+		//wysylanie
+		
+		
 
 
 		packet.clear();
@@ -453,7 +463,7 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 		}
 		//koniec wysylania
 
-		//waitKey(0);
+		
 		if (waitKey(10) == 27) //wait for 'esc' key press for 30ms. If 'esc' key is pressed, break loop
 		{
 			value = 1000;
@@ -465,10 +475,11 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 				return 12;
 			}
 			cout << "esc key is pressed by user" << endl;
-			break;
+			cv::destroyAllWindows();
 			return 1;
 		}
-	}
+	}*/
+	return 1;
 }
 
 
