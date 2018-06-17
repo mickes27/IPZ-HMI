@@ -11,11 +11,30 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
+#include <Windows.h>
 
+
+#include <cerrno>
+#include <cstdlib>
+#include <fstream>
+#include <ctime>
+
+std::wstring s2ws(const std::string& s)
+{
+	int len;
+	int slength = (int)s.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, 0, 0);
+	wchar_t* buf = new wchar_t[len];
+	MultiByteToWideChar(CP_ACP, 0, s.c_str(), slength, buf, len);
+	std::wstring r(buf);
+	delete[] buf;
+	return r;
+}
 
 ManualControlState::ManualControlState(StateStack& stack, Context context)
 	: State(stack, context)
-	, cap("http://192.168.137.20:8080/stream/video.mjpeg")
+	, cap("http://" + context.connection->getIP().toString() + ":8080/stream/video.mjpeg")
+	, cap2("http://" + context.connection->getIP().toString() + ":8090/stream/video.mjpeg")
 	, isUp(false)
 	, isDown(false)
 	, isLeft(false)
@@ -27,7 +46,59 @@ ManualControlState::ManualControlState(StateStack& stack, Context context)
 {
 	context.window->setKeyRepeatEnabled(false);
 
+	std::time_t tp = std::time(NULL);   // current time, an integer
+										// counting seconds since epoch
+
+	std::tm * ts = std::localtime(&tp); // parsed into human conventions
+
+	std::string currentDate = "";
+	currentDate += toString(ts->tm_mday);
+	currentDate += "-";
+	currentDate += toString(ts->tm_mon + 1);
+	currentDate += "-";
+	currentDate += toString(1900 + ts->tm_year);
+	dirDate = currentDate;
+	std::string toConvert = "Results/" + dirDate;
+
+
+	std::wstring stemp = s2ws(toConvert);
+	LPCWSTR Directory = stemp.c_str();
+
+	if (CreateDirectory(Directory, NULL))
+	{
+		std::cout << "Utworzylem katalog" << std::endl;
+	}
+	else if (ERROR_ALREADY_EXISTS == GetLastError())
+	{
+		std::cout << "Katalog istnieje" << std::endl;
+	}
+	else
+	{
+		
+		std::cout << "Jest problem: " << toConvert.c_str() << std::endl;
+		system("PAUSE");
+	}
+
+	std::string fileDirectory = "Results/" + dirDate + "/results.txt";
+	std::cout << "Sciezka: " << fileDirectory << std::endl;
+
+
+	file.open(fileDirectory, std::ios::app);
+	if (file.good() == true)
+	{
+		std::cout << "Uzyskano dostep do pliku!" << std::endl;
+	}
+	else {
+		std::cout << "Dostep do pliku zostal zabroniony!" << std::endl;
+	}
+
+	file << "Wyniki pomiarow. Rozpoczynanie sesji:" << std::endl;
+
 	if (!cap.isOpened()) {
+		exit(-1);
+	}
+
+	if (!cap2.isOpened()) {
 		exit(-1);
 	}
 
@@ -165,7 +236,13 @@ ManualControlState::ManualControlState(StateStack& stack, Context context)
 
 
 	gearValue = 1;
+	Sample = 1;
 
+}
+
+ManualControlState::~ManualControlState()
+{
+	file.close();
 }
 
 
@@ -235,8 +312,31 @@ void ManualControlState::draw()
 	}
 
 	camSprite.setTexture(camTexture);
-	camSprite.setPosition(640.f, 50.f);
+	camSprite.setPosition(603.f, 25.f);
 	window.draw(camSprite);
+
+	cap2 >> frameRGB;
+
+	if (frameRGB.empty())
+	{
+		std::cout << "Walnal obraz" << std::endl;
+		system("PAUSE");
+		return;
+	}
+
+	cv::cvtColor(frameRGB, frameRGBA, cv::COLOR_BGR2RGBA);
+
+	cam2Image.create(frameRGBA.cols, frameRGBA.rows, frameRGBA.ptr());
+
+	if (!cam2Texture.loadFromImage(cam2Image))
+	{
+		std::cout << "Brak obrazu" << std::endl;
+		return;
+	}
+
+	cam2Sprite.setTexture(cam2Texture);
+	cam2Sprite.setPosition(1255.f, 25.f);
+	window.draw(cam2Sprite);
 
 	cv::waitKey(10);
 	
@@ -299,6 +399,11 @@ bool ManualControlState::update(sf::Time dt)
 			mesHumidityVal.setString(toString(data.Humidity));
 			mesTemperatureVal.setString(toString(data.Temperature));
 			mesInsolationVal.setString(toString(data.Insolation));
+			file << Sample << " " << data.Humidity << " " << data.Temperature << " " << data.Insolation << std::endl;
+			if (!cam2Image.saveToFile("Results/"+dirDate+"/"+toString(Sample) + ".png")) {
+				return -1;
+			}
+			Sample++;
 			Busy = false;
 			mesButton.setTexture(getContext().textures->get(Textures::ButtonGreen ));
 		}

@@ -60,6 +60,6 @@ private:
 	int size_destruct;
 	int size_fill;
 	void average(float, float);
-	FILE* files;
+	//FILE* files;
 	std::vector<cv::Vec2f> lines;
 };

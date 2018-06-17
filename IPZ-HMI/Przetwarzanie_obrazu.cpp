@@ -52,10 +52,10 @@ Przetwarzanie_obrazu::Przetwarzanie_obrazu()
 	size_destruct = 5;
 	size_fill = 5;
 
-	files = fopen("plik.txt", "w");
+	/*files = fopen("sadsad.txt", "w");
 	if (!files) {
 		cout << "Problem z otwaciem ";
-	}
+	}*/
 
 	isStarted = true;
 }
@@ -63,7 +63,7 @@ Przetwarzanie_obrazu::Przetwarzanie_obrazu()
 
 Przetwarzanie_obrazu::~Przetwarzanie_obrazu()
 {
-	fclose(files);
+	//fclose(files);
 }
 
 
@@ -198,7 +198,7 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 			min_distance_left = dist;
 		}
 		//cout << min_distance_left << endl;
-		fprintf(files, "line: (%f,%f) \n", dist, min_distance_left);
+		//fprintf(files, "line: (%f,%f) \n", dist, min_distance_left);
 		// point of intersection of the line with first row	
 		Point pt1(int(rho / cos(theta)), 0);
 		// point of intersection of the line with last row
@@ -209,7 +209,7 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 		line(hough, pt1, pt2, Scalar(255), 8);
 		//}
 		//std::cout << "line: (" << rho << "," << theta << ")\n";
-		fprintf(files, "line: (%f,%f) \n", rho, theta);
+		//fprintf(files, "line: (%f,%f) \n", rho, theta);
 
 		++begin;
 	}
@@ -227,7 +227,7 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 			min_distance_right = dist;
 		}
 		//cout << min_distance_right << endl;
-		fprintf(files, "line: (%f,%f) \n", dist, min_distance_right);
+		//fprintf(files, "line: (%f,%f) \n", dist, min_distance_right);
 
 		//if (theta < 30.*PI / 180. || theta > 150.*PI / 180.) { //     filter theta angle to find lines with theta between 30 and 150 degrees (mostly vertical)
 
@@ -240,7 +240,7 @@ sf::Int16 Przetwarzanie_obrazu::Przetwarzanie()
 		line(hough, pt1, pt2, Scalar(255), 8);
 		//}
 		//std::cout << "line: (" << rho << "," << theta << ")\n";
-		fprintf(files, "line: (%f,%f) \n", rho, theta);
+		//fprintf(files, "line: (%f,%f) \n", rho, theta);
 		++begin;
 	}
 
@@ -313,7 +313,7 @@ bool Przetwarzanie_obrazu::zeros(float min)
 {
 	float zero = float(countNonZero(imgThresholded));
 	cout << "zeros: " << zero / (imgThresholded.cols*imgThresholded.rows) << endl;
-	fprintf(files, "zeros: %f", zero / (imgThresholded.cols*imgThresholded.rows));
+	//fprintf(files, "zeros: %f", zero / (imgThresholded.cols*imgThresholded.rows));
 	if (zero / (imgThresholded.cols*imgThresholded.rows) < 0.01) {
 		return true;
 	}

@@ -67,7 +67,7 @@ CApplication::CApplication()
 
 	try
 	{
-		mTextures.load(Textures::ManualControl, "Resources/Textures/ManualControl.png");
+		mTextures.load(Textures::ManualControl, "Resources/Textures/ManualControl2.png");
 	}
 	catch (std::runtime_error& e)
 	{

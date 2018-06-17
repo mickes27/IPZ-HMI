@@ -11,12 +11,14 @@
 
 #include <opencv2/opencv.hpp>
 #include <thread>
+#include <fstream>
 
 
 class ManualControlState : public State
 {
 public:
 	ManualControlState(StateStack& stack, Context context);
+	~ManualControlState();
 
 	virtual void		draw();
 	virtual bool		update(sf::Time dt);
@@ -27,6 +29,10 @@ private:
 	sf::Image camImage;
 	sf::Texture camTexture;
 	sf::Sprite camSprite;
+
+	sf::Image cam2Image;
+	sf::Texture cam2Texture;
+	sf::Sprite cam2Sprite;
 
 	sf::Sprite mBackgroundSprite;
 
@@ -48,6 +54,7 @@ private:
 	sf::Text mesInsolationVal;
 
 	cv::VideoCapture cap;
+	cv::VideoCapture cap2;
 
 	sf::Sprite arrowUp;
 	sf::Sprite arrowDown;
@@ -71,6 +78,10 @@ private:
 	bool duringMeasure;
 
 	int gearValue;
+
+	std::ofstream file;
+	int Sample;
+	std::string dirDate;
 };
 
 

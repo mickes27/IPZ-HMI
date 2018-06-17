@@ -92,11 +92,8 @@ void MoveJState::draw()
 		return;
 	}
 
-	if (isScaled == false) {
-		//camSprite.scale(1, 1);
-		isScaled = true;
-	}
-	camSprite.setPosition(1214.f, 30.f);
+	camSprite.setTexture(camTexture);
+	camSprite.setPosition(1250.f, 200.f);
 
 	window.draw(camSprite);
 	
@@ -122,7 +119,7 @@ void MoveJState::draw()
 	}
 
 	threshholdSprite.setTexture(threshholdTexture);
-	threshholdSprite.setPosition(1219.f, 564.f);
+	threshholdSprite.setPosition(1250.f, 628.f);
 
 	
 	window.draw(threshholdSprite);
