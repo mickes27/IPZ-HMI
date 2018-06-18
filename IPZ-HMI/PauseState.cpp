@@ -66,6 +66,7 @@ bool PauseState::handleEvent(const sf::Event& event)
 
 		Manual pack;
 		pack.Command = "menu";
+		pack.Water = false;
 		getContext().connection->sendPacket(pack);
 
 		requestStateClear();

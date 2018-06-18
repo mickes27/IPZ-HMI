@@ -92,7 +92,7 @@ ManualControlState::ManualControlState(StateStack& stack, Context context)
 		std::cout << "Dostep do pliku zostal zabroniony!" << std::endl;
 	}
 
-	file << "Wyniki pomiarow. Rozpoczynanie sesji:" << std::endl;
+	//file << "Wyniki pomiarow. Rozpoczynanie sesji:" << std::endl;
 
 	if (!cap.isOpened()) {
 		exit(-1);
@@ -401,7 +401,8 @@ bool ManualControlState::update(sf::Time dt)
 			mesInsolationVal.setString(toString(data.Insolation));
 			file << Sample << " " << data.Humidity << " " << data.Temperature << " " << data.Insolation << std::endl;
 			if (!cam2Image.saveToFile("Results/"+dirDate+"/"+toString(Sample) + ".png")) {
-				return -1;
+				std::cout << "Cos walnelo, ale nie wiem co" << std::endl;
+				system("PAUSE");
 			}
 			Sample++;
 			Busy = false;

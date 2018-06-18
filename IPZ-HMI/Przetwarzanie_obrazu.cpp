@@ -35,11 +35,11 @@ struct Config {
 Przetwarzanie_obrazu::Przetwarzanie_obrazu()
 {
 
-	iLowH = 32;
-	iHighH = 77;
-	iLowS = 68;
+	iLowH = 129;
+	iHighH = 179;
+	iLowS = 131;
 	iHighS = 255;
-	iLowV = 91;
+	iLowV = 144;
 	iHighV = 255;
 	max_angle = 180;
 	min_angle = 0;
@@ -314,7 +314,7 @@ bool Przetwarzanie_obrazu::zeros(float min)
 	float zero = float(countNonZero(imgThresholded));
 	cout << "zeros: " << zero / (imgThresholded.cols*imgThresholded.rows) << endl;
 	//fprintf(files, "zeros: %f", zero / (imgThresholded.cols*imgThresholded.rows));
-	if (zero / (imgThresholded.cols*imgThresholded.rows) < 0.01) {
+	if (zero / (imgThresholded.cols*imgThresholded.rows) < min) {
 		return true;
 	}
 	else {
@@ -425,7 +425,7 @@ int Przetwarzanie_obrazu::start(string ip, unsigned short port)
 
 		this->tresh();
 		imgOriginal.copyTo(result);
-		if (this->zeros(0.001f)) {
+		if (zeros(0.0004f)) {
 			value = 1000;
 			//show(0);
 		}
